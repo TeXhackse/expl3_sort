@@ -1,0 +1,124 @@
+\documentclass{article}
+
+
+\title{expl3 sort}
+\author{Marei Peischl}
+\date{October 2018}
+
+\usepackage{expl3}
+\usepackage{xcolor}
+\begin{document}
+
+\ExplSyntaxOn
+
+\seq_const_from_clist:Nn \c_tosort_seq {-5, 13, -32, 7, -3, 17, 23, 12, -35, 19} 
+\int_const:Nn \c_itemcount_int {\seq_count:N \c_tosort_seq}
+\cs_new:Nn \print_list: {
+	\int_step_inline:nn {\c_itemcount_int} {
+	\makebox[.5cm][c]{\tl_use:c {g_item##1_tl}} ~ 
+	}\\
+}
+
+%set initial macro sequence
+\int_step_inline:nn {\c_itemcount_int} {
+	\tl_new:c {g_item#1_tl} 
+	\tl_gset:cx {g_item#1_tl} {\seq_item:Nn \c_tosort_seq {#1}}
+}
+
+\subsection*{BubbleSort}
+
+\print_list:
+\int_step_inline:nn {\c_itemcount_int} {
+	\int_step_inline:nnnn {\c_itemcount_int-1} {-1} {#1} {
+		\int_compare:nT 
+			{\tl_use:c {g_item##1_tl} 
+				> 
+			\tl_use:c {g_item\int_eval:n {##1+1}_tl}} 
+			{
+				\tl_set_eq:Nc \l_tmpa_tl {g_item##1_tl}
+				\tl_gset_eq:cc {g_item##1_tl} {g_item\int_eval:n{##1+1}_tl}
+				\tl_gset_eq:cc {g_item\int_eval:n {##1+1} _tl} {l_tmpa_tl}
+				
+				\int_step_inline:nn {\c_itemcount_int} {
+					\int_compare:nT {####1=##1}{\rlap{\color{blue!20}\rule[-.3\baselineskip]{1cm}{\baselineskip}}}
+					\makebox[.5cm][c]{\tl_use:c {g_item####1_tl}} ~ 
+				}\\
+			}
+	}
+}
+
+\subsection*{Insertion Sort}
+%set initial macro sequence
+\int_step_inline:nn {\c_itemcount_int} {
+	\tl_gset:cx {g_item#1_tl} {\seq_item:Nn \c_tosort_seq {#1}}
+}
+
+\print_list:
+
+\tl_gset:cn {g_item0_tl} {0}
+
+\int_step_inline:nn {\c_itemcount_int} {
+	\int_step_inline:nnn {2} {\c_itemcount_int} {
+		\tl_set_eq:Nc \g_tmpa_tl {g_item#1_tl}
+		\int_gset:Nn \g_tmpa_int {#1 -1}
+%		
+		\int_gset:Nn \g_tmpb_int {#1}
+
+		\bool_while_do:nn {
+			\int_compare_p:n {\g_tmpa_int >= 1}
+			&& 
+			\int_compare_p:n {\use:c {g_item\int_use:N \g_tmpa_int _tl}>\g_tmpa_tl}
+		}{
+			%print
+			\int_step_inline:nn {\c_itemcount_int} {
+				\int_compare:nT {####1=\g_tmpa_int}{\rlap{\color{blue!20}\rule[-.3\baselineskip]{.5cm}{\baselineskip}}}
+				\int_compare:nT {####1=\g_tmpb_int}{\rlap{\color{blue!30}\rule[-.3\baselineskip]{.5cm}{\baselineskip}}}
+				\makebox[.5cm][c]{\tl_use:c {g_item####1_tl}} ~ 
+			}\\
+			%int endprint
+			\tl_set_eq:cc {g_item\int_eval:n {\g_tmpa_int+1}_tl} {g_item\int_use:N \g_tmpa_int _tl}
+			\int_gset:Nn \g_tmpa_int {\g_tmpa_int-1}
+		}
+		\tl_set_eq:cN {g_item\int_eval:n {\g_tmpa_int+1} _tl} \g_tmpa_tl
+	}	
+}
+\print_list:
+
+
+\subsection*{Selection Sort}
+%set initial macro sequence
+\int_step_inline:nn {\c_itemcount_int} {
+	\tl_gset:cx {g_item#1_tl} {\seq_item:Nn \c_tosort_seq {#1}}
+}
+
+\print_list:
+
+\int_step_inline:nn {\c_itemcount_int} {
+	\tl_gset:Nn \g_tmpa_tl {#1}
+	
+	\int_step_inline:nnn {#1} {\c_itemcount_int} {
+		\int_compare:nT {\tl_use:c {g_item##1_tl} < \tl_use:c {g_item\g_tmpa_tl _tl}} {
+			\tl_gset:Nn \g_tmpa_tl {##1}
+		}
+	}
+	
+	\int_step_inline:nn {\c_itemcount_int} {
+		\int_compare:nT {##1=\g_tmpa_tl}{\rlap{\color{blue!30}\rule[-.3\baselineskip]{.5cm}{\baselineskip}}}
+		\int_compare:nT {##1=#1}{\rlap{\color{blue!20}\rule[-.3\baselineskip]{.5cm}{\baselineskip}}}
+		\makebox[.5cm][c]{\tl_use:c {g_item##1_tl}} ~ 
+	}\\
+	
+	\tl_set_eq:Nc \l_tmpb_tl {g_item#1_tl}
+	\tl_gset_eq:cc {g_item#1_tl} {g_item\g_tmpa_tl _tl}
+	\tl_gset_eq:cN {g_item\g_tmpa_tl _tl} \l_tmpb_tl
+	%print
+	\int_step_inline:nn {\c_itemcount_int} {
+		\int_compare:nT {##1=\g_tmpa_tl}{\rlap{\color{blue!20}\rule[-.3\baselineskip]{.5cm}{\baselineskip}}}
+		\int_compare:nT {##1=#1}{\rlap{\color{blue!30}\rule[-.3\baselineskip]{.5cm}{\baselineskip}}}
+		\makebox[.5cm][c]{\tl_use:c {g_item##1_tl}} ~ 
+	}\\
+	%int endprint
+}
+\print_list:
+
+\end{document}
